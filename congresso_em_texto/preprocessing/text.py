@@ -5,6 +5,13 @@ class TextPreprocessor:
     def capitalize_text(self, text):
         return text.capitalize()
 
+    def fix_proper_noun(self, text):
+        lowercase = ["da", "de", "do", "das", "dos"]
+        text = [word.lower() for word in text.split()]
+        text = [word if word in lowercase else word.capitalize() for word in text]
+
+        return " ".join(text)
+
     def fix_text_brackets(self, text):
         return re.sub(r"(\s+(?<=[\[{(])|\s+(?=[\]})]))", "", text)
 
