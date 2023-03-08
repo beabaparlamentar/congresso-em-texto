@@ -1,7 +1,7 @@
 import difflib
 
-from congresso_em_texto.preprocessing.date_preprocessor import DatePreprocessor
-from congresso_em_texto.preprocessing.text_preprocessor import TextPreprocessor
+from congresso_em_texto.preprocessing.date import DatePreprocessor
+from congresso_em_texto.preprocessing.text import TextPreprocessor
 from congresso_em_texto.utils.constants import COMMITTEES, URLS
 
 
