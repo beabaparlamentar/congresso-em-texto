@@ -27,16 +27,18 @@ class EventCollector(Spider):
         }
 
     def start_requests(self):
+        if self.house == "senate":
+            pass
         if self.house == "chamber":
             return self.start_chamber_requests()
-        else:
-            pass
 
     def start_chamber_requests(self):
         formatted_dates = [date.strftime("%d/%m/%Y") for date in self.dates]
         search_type = "plenario" if self.origin == "plenary" else "comissao"
 
         for date in formatted_dates:
+            print(f"Coletando dados sobre os eventos do dia {date}...")
+
             yield FormRequest(
                 url=URLS.get_search_url(self.house),
                 method="GET",
@@ -77,5 +79,4 @@ class EventCollector(Spider):
                     origin=self.origin,
                 )
 
-                print(event, "\n")
                 yield event
