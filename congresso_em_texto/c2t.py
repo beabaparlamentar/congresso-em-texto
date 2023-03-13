@@ -75,9 +75,9 @@ class C2T:
         reactor.stop()
 
     def run(self):
-        # self.run_parlamentarians_crawler()
+        self.run_parlamentarians_crawler()
 
-        # self.config_events_crawler(house="chamber", origin="plenary")
+        self.config_events_crawler(house="chamber", origin="plenary")
         self.config_events_crawler(house="chamber", origin="committee")
         self.setup_crawlers()
         reactor.run()
