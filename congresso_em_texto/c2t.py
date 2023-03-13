@@ -6,6 +6,7 @@ from scrapy.crawler import CrawlerRunner
 from twisted.internet import defer, reactor
 
 from congresso_em_texto.collectors import EventCollector
+from congresso_em_texto.collectors import ParliamentarianCollector
 from congresso_em_texto.utils.constants import SETTINGS
 
 
@@ -16,7 +17,7 @@ class C2T:
         self.house = house
         self.origin = origin
 
-        self.collectors = []
+        self.crawlers = []
         self.settings = []
         self.parameters = []
 
@@ -42,46 +43,41 @@ class C2T:
             if not os.path.exists(p):
                 os.makedirs(p)
 
-    def config_chamber_committee_events(self):
-        directory = os.path.join("data", "chamber", "events")
-        filepath = os.path.join(directory, "chamber-committee-events")
+    def run_parlamentarians_crawler(self):
+        years = range(self.start_date.year - 3, self.end_date.year + 1)
+        years = [year for year in years if ((year - 2) % 4 == 0)]
+
+        collector = ParliamentarianCollector(years=years)
+        collector.start_requests()
+
+        for house in ["senate", "chamber"]:
+            filepath = os.path.join("data", house, "parliamentarians")
+            collector.save_data(house=house, filepath=filepath)
+
+    def config_events_crawler(self, house, origin):
+        directory = os.path.join("data", house, "events")
+        filepath = os.path.join(directory, f"{house}-{origin}-events")
 
         dates = pd.date_range(
             start=datetime(self.start_date.year, 1, 1),
             end=datetime(self.end_date.year, 12, 31),
         ).tolist()
 
-        self.collectors.append(EventCollector)
+        self.crawlers.append(EventCollector)
         self.settings.append(SETTINGS.get_export_settings(filepath))
-        self.parameters.append(
-            {"house": "chamber", "origin": "committee", "dates": dates}
-        )
-
-    def config_chamber_plenary_events(self):
-        directory = os.path.join("data", "chamber", "events")
-        filepath = os.path.join(directory, "chamber-plenary-events")
-
-        dates = pd.date_range(
-            start=datetime(self.start_date.year, 1, 1),
-            end=datetime(self.end_date.year, 12, 31),
-        ).tolist()
-
-        self.collectors.append(EventCollector)
-        self.settings.append(SETTINGS.get_export_settings(filepath))
-        self.parameters.append(
-            {"house": "chamber", "origin": "plenary", "dates": dates}
-        )
+        self.parameters.append({"house": house, "origin": origin, "dates": dates})
 
     @defer.inlineCallbacks
     def setup_crawlers(self):
-        for i, collector in enumerate(self.collectors):
+        for i, collector in enumerate(self.crawlers):
             process = CrawlerRunner(self.settings[i])
             yield process.crawl(collector, **self.parameters[i])
         reactor.stop()
 
     def run(self):
-        self.config_chamber_plenary_events()
-        self.config_chamber_committee_events()
+        # self.run_parlamentarians_crawler()
 
+        # self.config_events_crawler(house="chamber", origin="plenary")
+        self.config_events_crawler(house="chamber", origin="committee")
         self.setup_crawlers()
         reactor.run()
