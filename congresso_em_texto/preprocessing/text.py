@@ -26,3 +26,6 @@ class TextPreprocessor:
 
     def remove_text_escape_chars(self, text):
         return re.sub(r"([\n\r\t]+)", " ", text)
+
+    def uppercase_text(self, text):
+        return text.upper()
