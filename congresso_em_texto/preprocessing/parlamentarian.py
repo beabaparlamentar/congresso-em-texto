@@ -1,8 +1,7 @@
-from congresso_em_texto.preprocessing.date import DatePreprocessor
 from congresso_em_texto.preprocessing.text import TextPreprocessor
 
 
-class ParlamentarianPreprocessor(DatePreprocessor, TextPreprocessor):
+class ParlamentarianPreprocessor(TextPreprocessor):
     def fix(self, data):
         data = self.filter_elected_candidates(data)
         data = self.filter_parlamentarians(data)

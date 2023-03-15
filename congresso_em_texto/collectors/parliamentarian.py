@@ -10,7 +10,10 @@ from congresso_em_texto.utils.constants import URLS
 
 
 class ParliamentarianCollector:
-    def __init__(self, years):
+    def __init__(self, start_date, end_date):
+        years = range(start_date.year - 3, end_date.year + 1)
+        years = [year for year in years if ((year - 2) % 4 == 0)]
+
         self.years = years
         self.data = pd.DataFrame()
         self.preprocessor = ParlamentarianPreprocessor()
@@ -48,13 +51,8 @@ class ParliamentarianCollector:
         return dataset
 
     def save_data(self, house, filepath):
-        if house == "senate":
-            filename, position = "senadores.csv", "Senador(a)"
-        if house == "chamber":
-            filename, position = "deputados.csv", "Deputado(a) Federal"
-
+        position = "Senador(a)" if house == "senate" else "Deputado(a) Federal"
         indexes = self.data["cargo"] == position
-        filepath = os.path.join(filepath, filename)
         dataset = self.data[indexes]
 
         if os.path.exists(filepath):

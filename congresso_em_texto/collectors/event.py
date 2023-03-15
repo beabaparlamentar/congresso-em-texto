@@ -1,3 +1,4 @@
+import pandas as pd
 from scrapy import Spider, FormRequest
 
 from congresso_em_texto.preprocessing import EventPreprocessor
@@ -7,8 +8,9 @@ from congresso_em_texto.utils.constants import SELECTORS, URLS
 class EventCollector(Spider):
     name = "event-collector"
 
-    def __init__(self, house, origin, dates, *args, **kwargs):
+    def __init__(self, house, origin, start_date, end_date, *args, **kwargs):
         super(EventCollector, self).__init__(*args, **kwargs)
+        dates = pd.date_range(start=start_date, end=end_date).tolist()
 
         self.house = house
         self.origin = origin
