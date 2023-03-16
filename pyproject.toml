@@ -5,14 +5,18 @@ description = "Ferramental para extração de discursos oriundos do Congresso Na
 license = "LGPL-3.0-or-later"
 authors = ["Matheus Alves <matheusalves@copin.ufcg.edu.br>"]
 maintainers = ["Victor Vinícius <victor.vinicius.araujo@ccc.ufcg.edu.br>"]
-readme = "README.md"
 repository = "https://github.com/beabaparlamentar/congresso-em-texto"
 keywords = ["congresso-nacional", "parlamentares", "raspagem-de-dados"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pandas = "^1.5.3"
+Scrapy = "^2.7.1"
 
 [tool.poetry.dev-dependencies]
+black = "^22.12.0"
+flake8 = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
