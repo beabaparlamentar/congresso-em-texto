@@ -7,16 +7,14 @@ from twisted.internet import defer, reactor
 
 from congresso_em_texto.collectors import EventCollector
 from congresso_em_texto.collectors import ParliamentarianCollector
+from congresso_em_texto.collectors import SpeechCollector
 from congresso_em_texto.utils.constants import SETTINGS
 
 
 class C2T:
-    def __init__(self, start_date, end_date, house=None, origin=None):
+    def __init__(self, start_date, end_date):
         self.start_date = start_date
         self.end_date = end_date
-        self.house = house
-        self.origin = origin
-
         self.crawlers = []
         self.settings = []
         self.parameters = []
@@ -43,29 +41,58 @@ class C2T:
             if not os.path.exists(p):
                 os.makedirs(p)
 
-    def run_parlamentarians_crawler(self):
-        years = range(self.start_date.year - 3, self.end_date.year + 1)
-        years = [year for year in years if ((year - 2) % 4 == 0)]
+    def collect_parlamentarians(self):
+        collector = ParliamentarianCollector(
+            start_date=self.start_date,
+            end_date=self.end_date,
+        )
 
-        collector = ParliamentarianCollector(years=years)
         collector.start_requests()
+        houses = ["senate", "chamber"]
 
-        for house in ["senate", "chamber"]:
-            filepath = os.path.join("data", house, "parliamentarians")
+        for house in houses:
+            filename = "senadores.csv" if house == "senate" else "deputados.csv"
+            filepath = os.path.join("data", house, "parliamentarians", filename)
             collector.save_data(house=house, filepath=filepath)
 
     def config_events_crawler(self, house, origin):
-        directory = os.path.join("data", house, "events")
-        filepath = os.path.join(directory, f"{house}-{origin}-events")
-
-        dates = pd.date_range(
-            start=datetime(self.start_date.year, 1, 1),
-            end=datetime(self.end_date.year, 12, 31),
-        ).tolist()
+        filename = f"{house}-{origin}-events"
+        filepath = os.path.join("data", house, "events", filename)
 
         self.crawlers.append(EventCollector)
         self.settings.append(SETTINGS.get_export_settings(filepath))
-        self.parameters.append({"house": house, "origin": origin, "dates": dates})
+        self.parameters.append(
+            {
+                "house": house,
+                "origin": origin,
+                "start_date": self.start_date,
+                "end_date": self.end_date,
+            }
+        )
+
+    def config_speeches_crawler(self, house, origin):
+        filename = f"{house}-{origin}-events.csv"
+        filepath = os.path.join("data", house, "events", filename)
+
+        events = pd.read_csv(
+            filepath,
+            parse_dates=["data"],
+            date_parser=lambda x: datetime.strptime(x, "%Y-%m-%d"),
+        )
+
+        events = events.query("@self.start_date <= data <= @self.end_date")
+        speeches_path = os.path.join("data", house, "speeches")
+
+        self.crawlers.append(SpeechCollector)
+        self.settings.append(SETTINGS.get_default_settings())
+        self.parameters.append(
+            {
+                "house": house,
+                "origin": origin,
+                "events": events,
+                "directory": speeches_path,
+            }
+        )
 
     @defer.inlineCallbacks
     def setup_crawlers(self):
@@ -75,9 +102,13 @@ class C2T:
         reactor.stop()
 
     def run(self):
-        self.run_parlamentarians_crawler()
+        self.collect_parlamentarians()
 
         self.config_events_crawler(house="chamber", origin="plenary")
         self.config_events_crawler(house="chamber", origin="committee")
+
+        self.config_speeches_crawler(house="chamber", origin="plenary")
+        self.config_speeches_crawler(house="chamber", origin="committee")
+
         self.setup_crawlers()
         reactor.run()
