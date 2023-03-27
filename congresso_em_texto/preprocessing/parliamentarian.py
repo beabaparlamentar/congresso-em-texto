@@ -1,10 +1,10 @@
 from congresso_em_texto.preprocessing.text import TextPreprocessor
 
 
-class ParlamentarianPreprocessor(TextPreprocessor):
+class ParliamentarianPreprocessor(TextPreprocessor):
     def fix(self, data):
         data = self.filter_elected_candidates(data)
-        data = self.filter_parlamentarians(data)
+        data = self.filter_parliamentarians(data)
         data = self.filter_columns(data)
         data = self.fix_values(data)
 
@@ -16,7 +16,7 @@ class ParlamentarianPreprocessor(TextPreprocessor):
 
         return data[indexes]
 
-    def filter_parlamentarians(self, data):
+    def filter_parliamentarians(self, data):
         values = ["DEPUTADO FEDERAL", "SENADOR"]
         indexes = data["DS_CARGO"].isin(values)
 
