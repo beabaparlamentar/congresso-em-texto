@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 import pandas as pd
 
-from congresso_em_texto.preprocessing import ParlamentarianPreprocessor
+from congresso_em_texto.preprocessing import ParliamentarianPreprocessor
 from congresso_em_texto.utils.constants import URLS
 
 
@@ -16,7 +16,7 @@ class ParliamentarianCollector:
 
         self.years = years
         self.data = pd.DataFrame()
-        self.preprocessor = ParlamentarianPreprocessor()
+        self.preprocessor = ParliamentarianPreprocessor()
 
         self.model = {
             "id_parlamentar": None,
@@ -32,12 +32,12 @@ class ParliamentarianCollector:
 
     def start_requests(self):
         for year in self.years:
+            print(f"Coletando dados sobre os parlamentares eleitos em {year}...")
             response = requests.get(URLS.get_candidates_url(year))
 
             if response.ok:
                 dataset = self.extract_dataset(response)
                 self.data = pd.concat([self.data, dataset])
-                print(f"Coletando dados sobre os parlamentares eleitos em {year}...")
 
         self.data = self.preprocessor.fix(data=self.data)
 
