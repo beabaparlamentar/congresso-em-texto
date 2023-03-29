@@ -6,7 +6,7 @@ class SettingsNamespace:
     DEFAULT = {
         "USER_AGENT": "Congresso em Texto",
         "LOG_LEVEL": "ERROR",
-        "DNS_TIMEOUT": 180,
+        "DNS_TIMEOUT": 60,
         "AUTOTHROTTLE_ENABLED": True,
         "COOKIES_ENABLED": False,
         "ROBOTSTXT_OBEY": True,
