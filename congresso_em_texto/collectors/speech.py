@@ -13,12 +13,28 @@ from congresso_em_texto.utils.constants import SELECTORS, PATTERNS
 class SpeechCollector(Spider):
     name = "speech-collector"
 
-    def __init__(self, house, origin, events, directory, *args, **kwargs):
+    def __init__(
+        self,
+        house,
+        origin,
+        start_date,
+        end_date,
+        events_filepath,
+        speeches_directory,
+        *args,
+        **kwargs,
+    ):
         super(SpeechCollector, self).__init__(*args, **kwargs)
+
+        events = pd.read_csv(events_filepath)
+        events["data"] = pd.to_datetime(events["data"], format="%Y-%m-%d")
+        events = events.query("@start_date <= data <= @end_date")
 
         self.house = house
         self.origin = origin
-        self.directory = directory
+        self.start_date = start_date
+        self.end_date = end_date
+        self.directory = speeches_directory
         self.events = events.drop_duplicates()
         self.preprocessor = SpeechPreprocessor()
 

@@ -1,13 +1,12 @@
 import os
-from datetime import datetime
 
-import pandas as pd
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import defer, reactor
 
 from congresso_em_texto.collectors import EventCollector
 from congresso_em_texto.collectors import ParliamentarianCollector
 from congresso_em_texto.collectors import SpeechCollector
+from congresso_em_texto.utils import DataManager
 from congresso_em_texto.utils.constants import SETTINGS
 
 
@@ -18,6 +17,7 @@ class C2T:
         self.crawlers = []
         self.settings = []
         self.parameters = []
+        self.manager = DataManager()
 
         self.create_directories()
 
@@ -41,7 +41,7 @@ class C2T:
             if not os.path.exists(p):
                 os.makedirs(p)
 
-    def collect_parlamentarians(self):
+    def collect_parliamentarians(self):
         collector = ParliamentarianCollector(
             start_date=self.start_date,
             end_date=self.end_date,
@@ -51,7 +51,7 @@ class C2T:
         houses = ["senate", "chamber"]
 
         for house in houses:
-            filename = "senadores.csv" if house == "senate" else "deputados.csv"
+            filename = "senators.csv" if house == "senate" else "deputies.csv"
             filepath = os.path.join("data", house, "parliamentarians", filename)
             collector.save_data(house=house, filepath=filepath)
 
@@ -71,17 +71,10 @@ class C2T:
         )
 
     def config_speeches_crawler(self, house, origin):
-        filename = f"{house}-{origin}-events.csv"
-        filepath = os.path.join("data", house, "events", filename)
+        speeches_directory = os.path.join("data", house, "speeches")
 
-        events = pd.read_csv(
-            filepath,
-            parse_dates=["data"],
-            date_parser=lambda x: datetime.strptime(x, "%Y-%m-%d"),
-        )
-
-        events = events.query("@self.start_date <= data <= @self.end_date")
-        speeches_path = os.path.join("data", house, "speeches")
+        events_filename = f"{house}-{origin}-events.csv"
+        events_filepath = os.path.join("data", house, "events", events_filename)
 
         self.crawlers.append(SpeechCollector)
         self.settings.append(SETTINGS.get_default_settings())
@@ -89,8 +82,10 @@ class C2T:
             {
                 "house": house,
                 "origin": origin,
-                "events": events,
-                "directory": speeches_path,
+                "start_date": self.start_date,
+                "end_date": self.end_date,
+                "events_filepath": events_filepath,
+                "speeches_directory": speeches_directory,
             }
         )
 
@@ -102,7 +97,8 @@ class C2T:
         reactor.stop()
 
     def run(self):
-        self.collect_parlamentarians()
+        print("Iniciando coletores...")
+        self.collect_parliamentarians()
 
         self.config_events_crawler(house="chamber", origin="plenary")
         self.config_events_crawler(house="chamber", origin="committee")
@@ -112,3 +108,7 @@ class C2T:
 
         self.setup_crawlers()
         reactor.run()
+
+        self.manager.verify()
+
+        print("Coleta e verificação dos dados concluída!")
