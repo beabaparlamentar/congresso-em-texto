@@ -6,7 +6,7 @@ class TextPreprocessor:
         return text.capitalize()
 
     def fix_proper_noun(self, text):
-        lowercase = ["da", "de", "do", "das", "dos"]
+        lowercase = ["da", "de", "do", "das", "dos", "e"]
         text = [word.lower() for word in text.split()]
         text = [word if word in lowercase else word.capitalize() for word in text]
 
