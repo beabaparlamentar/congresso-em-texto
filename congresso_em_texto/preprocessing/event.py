@@ -49,8 +49,18 @@ class EventPreprocessor(DatePreprocessor, TextPreprocessor):
     def fix_chamber_committee_event(self, event):
         event["categoria_ambiente"] = "Comissão"
 
-        if "Ap c/" in event["categoria_evento"]:
-            event["categoria_evento"] = "Audiência pública"
+        if "congresso nacional" in event["categoria_evento"]:
+            event["categoria_evento"] = "Sessão do Congresso Nacional"
+
+        if "Fórum" in event["categoria_evento"]:
+            event["categoria_evento"] = "Fórum"
+
+        for substring in ["Ap c/", "ap /", "Audiência pública"]:
+            if substring in event["categoria_evento"]:
+                event["categoria_evento"] = "Audiência pública"
+
+        if "Outro " in event["categoria_evento"]:
+            event["categoria_evento"] = "Outros"
 
         standing_committees = COMMITTEES.to_list("chamber")
         committee = event["ambiente_legislativo"]
