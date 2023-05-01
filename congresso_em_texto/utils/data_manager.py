@@ -40,6 +40,7 @@ class DataManager:
                 data = data.query("id_evento != 'id_evento'")
 
                 data = data.drop_duplicates(subset=["discursos"])
+                data = data.dropna(subset=["data", "id_evento", "discursos"])
                 data = data.sort_values(by=["data", "id_evento", "discursos"])
 
                 data.to_csv(filepath, index=False)
@@ -56,6 +57,7 @@ class DataManager:
                     data = data.query("id_evento != 'id_evento'")
 
                     data = data.drop_duplicates(subset=["orador", "texto"])
+                    data = data.dropna(subset=["orador", "texto"])
                     data = data.sort_values(by=["ordem_discurso"])
                     data["ordem_discurso"] = data.reset_index().index + 1
 
@@ -63,6 +65,9 @@ class DataManager:
 
     def verify(self):
         print("Iniciando verificação dos dados...")
+
         self.verify_parliamentarians()
         self.verify_events()
         self.verify_speeches()
+
+        print("Verificação dos dados concluída!")

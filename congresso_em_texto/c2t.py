@@ -110,5 +110,3 @@ class C2T:
         reactor.run()
 
         self.manager.verify()
-
-        print("Coleta e verificação dos dados concluída!")
