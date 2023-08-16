@@ -9,8 +9,11 @@ import pandas as pd
 from congresso_em_texto.preprocessing import SpeechPreprocessor
 from congresso_em_texto.utils.constants import SELECTORS, PATTERNS
 
-
 class SpeechCollector(Spider):
+    """
+    Spider para coletar e processar discursos de um órgão legislativo.
+    """
+
     name = "speech-collector"
 
     def __init__(
@@ -24,6 +27,19 @@ class SpeechCollector(Spider):
         *args,
         **kwargs,
     ):
+        """
+        Inicializa o ColetorDiscursos.
+
+        Args:
+            house (str): A casa legislativa ("senate" ou "chamber").
+            origin (str): A origem dos dados.
+            start_date (str): A data de início para coletar discursos (AAAA-MM-DD).
+            end_date (str): A data de término para coletar discursos (AAAA-MM-DD).
+            events_filepath (str): Caminho para o arquivo CSV de eventos.
+            speeches_directory (str): Diretório para salvar os discursos.
+            *args: Argumentos adicionais.
+            **kwargs: Argumentos adicionais.
+        """
         super(SpeechCollector, self).__init__(*args, **kwargs)
 
         events = pd.read_csv(events_filepath)
@@ -46,12 +62,24 @@ class SpeechCollector(Spider):
         }
 
     def start_requests(self):
+        """
+        Gera as primeiras requisições para coletar discursos com base na casa selecionada.
+
+        Yields:
+            Request: Uma requisição para coletar discursos.
+        """ 
         if self.house == "senate":
             pass
         if self.house == "chamber":
             return self.start_chamber_requests()
 
     def start_chamber_requests(self):
+        """
+        Gera requisições para coletar discursos da câmara.
+
+        Yields:
+            Request: Uma requisição para coletar discursos de um evento.
+        """
         for _, row in self.events.iterrows():
             event = row.to_dict()
 
@@ -62,6 +90,12 @@ class SpeechCollector(Spider):
             )
 
     def parse_chamber_events(self, response):
+        """
+        Analisa eventos da câmara e extrai discursos.
+
+        Args:
+            response: A resposta da requisição HTTP.
+        """
         event = response.meta.get("event")
         content_selector = SELECTORS.get(name="content")
         speaker_pattern = PATTERNS.get_regex(name="chamber_speaker")
@@ -83,6 +117,13 @@ class SpeechCollector(Spider):
         self.save_data(speeches=speeches, event=event)
 
     def save_data(self, speeches, event):
+        """
+        Salva os dados dos discursos em um arquivo CSV.
+
+        Args:
+            speeches (list): Lista de dados dos discursos.
+            event (dict): Informações do evento.
+        """
         event_year = event["data"].strftime("%Y")
         event_month = event["data"].strftime("%m")
         event_id = str(event["id_evento"])
