@@ -11,7 +11,17 @@ from congresso_em_texto.utils.constants import SETTINGS
 
 
 class C2T:
+    """
+    Classe responsável por coordenar a coleta de dados para texto (C2T).
+    """
     def __init__(self, start_date, end_date):
+        """
+        Inicializa o C2T com as datas de início e fim.
+
+        Args:
+            start_date (str): Data de início no formato 'yyyy-mm-dd'.
+            end_date (str): Data de fim no formato 'yyyy-mm-dd'.
+        """
         self.start_date = start_date
         self.end_date = end_date
         self.crawlers = []
@@ -22,6 +32,9 @@ class C2T:
         self.create_directories()
 
     def create_directories(self):
+        """
+        Cria diretórios de armazenamento de dados com base nas datas.
+        """
         years = range(self.start_date.year, self.end_date.year + 1)
         months = range(1, 13)
 
@@ -42,6 +55,9 @@ class C2T:
                 os.makedirs(p)
 
     def collect_parliamentarians(self):
+        """
+        Coleta informações sobre parlamentares e salva os dados em arquivos.
+        """
         collector = ParliamentarianCollector(
             start_date=self.start_date,
             end_date=self.end_date,
@@ -56,6 +72,13 @@ class C2T:
             collector.save_data(house=house, filepath=filepath)
 
     def config_events_crawler(self, house, origin):
+        """
+        Configura o coletor de eventos para uma casa legislativa e origem específicas.
+
+        Args:
+            house (str): Casa legislativa ("camara" ou "senado").
+            origin (str): Origem dos eventos ("plenaria" ou "comissao").
+        """
         filename = f"{house}-{origin}-events"
         filepath = os.path.join("data", house, "events", filename)
 
@@ -71,6 +94,13 @@ class C2T:
         )
 
     def config_speeches_crawler(self, house, origin):
+        """
+        Configura o coletor de discursos para uma casa legislativa e origem específicas.
+
+        Args:
+            house (str): Casa legislativa ("camara" ou "senado").
+            origin (str): Origem dos eventos ("plenaria" ou "comissao").
+        """
         speeches_directory = os.path.join("data", house, "speeches")
 
         events_filename = f"{house}-{origin}-events.csv"
@@ -91,12 +121,18 @@ class C2T:
 
     @defer.inlineCallbacks
     def setup_crawlers(self):
+        """
+        Configura e executa os coletadores.
+        """
         for i, collector in enumerate(self.crawlers):
             process = CrawlerRunner(self.settings[i])
             yield process.crawl(collector, **self.parameters[i])
         reactor.stop()
 
     def run(self):
+        """
+        Executa a coleta de dados.
+        """
         print("Iniciando coletores...")
         self.collect_parliamentarians()
 

@@ -6,6 +6,9 @@ from congresso_em_texto.utils.constants import COMMITTEES, URLS
 
 
 class EventPreprocessor(DatePreprocessor, TextPreprocessor):
+    """
+    Classe para pré-processamento de informações de eventos.
+    """
     def fix(self, event, house, origin):
         for key in event.keys():
             if key == "discursos":
@@ -27,6 +30,17 @@ class EventPreprocessor(DatePreprocessor, TextPreprocessor):
         return event
 
     def fix_chamber_event(self, event, origin):
+        """
+        Aplica correções e pré-processamento aos dados do evento.
+
+        Args:
+            event (dict): Dados do evento.
+            house (str): A casa legislativa ("senate" ou "chamber").
+            origin (str): A origem dos dados ("plenary" ou "committee").
+
+        Returns:
+            dict: Dados do evento após correções e pré-processamento.
+        """
         event["casa_legislativa"] = "Câmara dos Deputados"
         event["discursos"] = URLS.get_speech_url("chamber") + event["discursos"]
 
@@ -41,12 +55,30 @@ class EventPreprocessor(DatePreprocessor, TextPreprocessor):
         return event
 
     def fix_chamber_plenary_event(self, event):
+        """  
+        Aplica correções e pré-processamento específicos para eventos do plenário.
+
+        Args:
+            event (dict): Dados do evento.
+      
+        Returns:
+            dict: Dados do evento após correções e pré-processamento específicos da câmara.
+        """
         event["ambiente_legislativo"] = "Plenário"
         event["categoria_ambiente"] = "Plenário"
 
         return event
 
     def fix_chamber_committee_event(self, event):
+        """
+        Aplica correções e pré-processamento específicos para eventos das comissões.
+
+        Args:
+            evento (dict): Dados do evento.
+
+        Returns:
+            dict: Dados do evento após correções e pré-processamento específicos para plenários da câmara.
+        """
         event["categoria_ambiente"] = "Comissão"
 
         if "congresso nacional" in event["categoria_evento"]:

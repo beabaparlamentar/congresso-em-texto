@@ -10,7 +10,18 @@ from congresso_em_texto.utils.constants import URLS
 
 
 class ParliamentarianCollector:
+    """
+    Classe para coleta e processamento de informações sobre parlamentares.
+    """
+    
     def __init__(self, start_date, end_date):
+        """
+        Inicializa o ColetorParlamentares.
+
+        Args:
+            start_date (datetime): Data de início do intervalo.
+            end_date (datetime): Data de término do intervalo.
+        """
         years = range(start_date.year - 3, end_date.year + 1)
         years = [year for year in years if ((year - 2) % 4 == 0)]
 
@@ -31,6 +42,9 @@ class ParliamentarianCollector:
         }
 
     def start_requests(self):
+        """
+        Inicia as requisições para coletar informações sobre os parlamentares eleitos.
+        """
         for year in self.years:
             print(f"Coletando dados sobre os parlamentares eleitos em {year}...")
             response = requests.get(URLS.get_candidates_url(year))
@@ -42,6 +56,15 @@ class ParliamentarianCollector:
         self.data = self.preprocessor.fix(data=self.data)
 
     def extract_dataset(self, response):
+        """
+        Extrai o conjunto de dados do arquivo zip.
+
+        Args:
+            response: A resposta da requisição HTTP.
+
+        Returns:
+            DataFrame: O conjunto de dados extraído.
+        """
         zipfile = ZipFile(BytesIO(response.content))
         filename = [fn for fn in zipfile.namelist() if fn.endswith("BRASIL.csv")]
         file = zipfile.open(filename[0])

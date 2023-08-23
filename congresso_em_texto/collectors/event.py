@@ -6,9 +6,23 @@ from congresso_em_texto.utils.constants import SELECTORS, URLS
 
 
 class EventCollector(Spider):
+    """
+    Spider para coleta e processamento de informações sobre eventos legislativos.
+    """
     name = "event-collector"
 
     def __init__(self, house, origin, start_date, end_date, *args, **kwargs):
+        """
+        Inicializa o ColetorEventos.
+
+        Args:
+            house (str): A casa legislativa ("senate" ou "chamber").
+            origin (str): A origem dos dados ("plenary" ou "committee").
+            start_date (str): A data de início do intervalo (AAAA-MM-DD).
+            end_date (str): A data de término do intervalo (AAAA-MM-DD).
+            *args: Argumentos adicionais.
+            **kwargs: Argumentos adicionais.
+        """
         super(EventCollector, self).__init__(*args, **kwargs)
         dates = pd.date_range(start=start_date, end=end_date).tolist()
 
@@ -29,12 +43,21 @@ class EventCollector(Spider):
         }
 
     def start_requests(self):
+        """
+        Inicia as requisições para coletar informações sobre eventos legislativos.
+        """
         if self.house == "senate":
             pass
         if self.house == "chamber":
             return self.start_chamber_requests()
 
     def start_chamber_requests(self):
+        """
+        Inicia as requisições para coletar eventos da câmara.
+
+        Yields:
+            FormRequest: Uma requisição para coletar eventos.
+        """
         formatted_dates = [date.strftime("%d/%m/%Y") for date in self.dates]
         search_type = "plenario" if self.origin == "plenary" else "comissao"
 
@@ -56,6 +79,12 @@ class EventCollector(Spider):
             )
 
     def parse_chamber_events(self, response):
+        """
+        Analisa os eventos da câmara e extrai informações.
+
+        Args:
+            resposta: A resposta da requisição HTTP.
+        """
         table_selector = SELECTORS.get(name="chamber_events")
         table = response.css(table_selector)
 

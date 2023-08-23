@@ -3,10 +3,19 @@ import pandas as pd
 
 
 class DataManager:
+    """
+    Classe responsável por verificar e ajustar a consistência dos dados coletados.
+    """
     def __init__(self):
+        """
+        Inicializa o GerenciadorDados.
+        """
         pass
 
     def verify_parliamentarians(self):
+        """
+        Verifica e ajusta a consistência dos dados sobre parlamentares coletados.
+        """
         datasets_metadata = [
             {"house": "chamber", "filename": "deputies.csv"},
             {"house": "senate", "filename": "senators.csv"},
@@ -26,6 +35,9 @@ class DataManager:
                 data.to_csv(filepath, index=False)
 
     def verify_events(self):
+        """
+        Verifica e ajusta a consistência dos dados sobre eventos coletados.
+        """
         datasets_metadata = [
             {"house": "chamber", "filename": "chamber-committee-events.csv"},
             {"house": "chamber", "filename": "chamber-plenary-events.csv"},
@@ -46,6 +58,9 @@ class DataManager:
                 data.to_csv(filepath, index=False)
 
     def verify_speeches(self):
+        """
+        Verifica e ajusta a consistência dos dados sobre discursos coletados.
+        """
         datasets_metadata = [{"house": "chamber"}]
 
         for metadata in datasets_metadata:
@@ -64,6 +79,9 @@ class DataManager:
                     data.to_csv(filepath, index=False)
 
     def verify(self):
+        """
+        Executa a verificação dos dados coletados e ajusta a consistência quando necessário.
+        """
         print("Iniciando verificação dos dados...")
 
         self.verify_parliamentarians()
